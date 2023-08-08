@@ -10,23 +10,21 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from twocaptcha import TwoCaptcha
 
-url = 'https://consulat.gouv.fr/ambassade-de-france-a-douala/rendez-vous?name=Visa'
-#url = 'https://consulat.gouv.fr/ambassade-de-france-a-bogota/rendez-vous'
+#url = 'https://consulat.gouv.fr/ambassade-de-france-a-douala/rendez-vous?name=Visa'
+url = 'https://consulat.gouv.fr/ambassade-de-france-a-bogota/rendez-vous'
 driver_path = 'D:\\Dev\\chromedriver\\chromedriver_win32\\chromedriver.exe'  
 
 def bypass_captcha(driver)-> str:
     
-    print("Tentative de résolution du captcha ...")
-    solver = TwoCaptcha(apiKey='YOUR API KEY')
+    print("Try to resolve captcha ...")
+    solver = TwoCaptcha(apiKey='e22a28b22167b4cbda624174d5b751c8')
     # Perform captcha validation
     image_captcha = WebDriverWait(driver, 10000).until(
         EC.presence_of_element_located((By.ID, 'captcha-image'))
     )
-    try:
-        image_captcha.screenshot("foo.png")
-    except:
-        print("Problen when dowloading the captcha images")
-    result = solver.normal('foo.png')
+    time.sleep(2)
+    image_captcha.screenshot("foo.png")
+    result = solver.normal("foo.png")
     print(f"Résolution du captcha ok : {result}")
 
     return result['code']
@@ -36,17 +34,29 @@ def get_available_days():
     #and verify if there is any timeslots available
 
     driver = webdriver.Chrome()
-    driver.get(url)
     print("Passing First page")
     #pass the captcha
-    input_captcha = WebDriverWait(driver, 10000).until(
-        EC.presence_of_element_located((By.CLASS_NAME, 'gouv-step-captcha-input'))
-    )
-    input_captcha.send_keys( bypass_captcha(driver) )
-    access_btn = driver.find_element( By.CLASS_NAME,"fr-icon-check-line")
-    access_btn.click()
-
-    print("Passing the Second page")
+    captcha_resolved = False
+    driver.get(url)
+    while not captcha_resolved :
+        driver.refresh()
+        input_captcha = WebDriverWait(driver, 10000).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'gouv-step-captcha-input'))
+        )
+        input_captcha.send_keys( bypass_captcha(driver) )
+        access_btn = WebDriverWait(driver, 10000).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'fr-icon-check-line'))
+        )
+        access_btn.click()
+        time.sleep(2)
+        foo = driver.find_elements(By.ID, 'captcha-image')
+        if foo != [] :  
+            print('Problem when resolving the captcha. We will try again')
+        else :
+            print("Captcha respons OK.")
+            captcha_resolved = True
+    
+    print("Passing the Second page.")
     time.sleep(1)
     choice = WebDriverWait(driver, 10000).until(
         EC.presence_of_element_located((By.ID, 'service-0'))
