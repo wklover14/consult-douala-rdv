@@ -17,7 +17,7 @@ driver_path = 'D:\\Dev\\chromedriver\\chromedriver_win32\\chromedriver.exe'
 def bypass_captcha(driver)-> str:
     
     print("Try to resolve captcha ...")
-    solver = TwoCaptcha(apiKey='e22a28b22167b4cbda624174d5b751c8')
+    solver = TwoCaptcha(apiKey='you api key')
     # Perform captcha validation
     image_captcha = WebDriverWait(driver, 10000).until(
         EC.presence_of_element_located((By.ID, 'captcha-image'))
